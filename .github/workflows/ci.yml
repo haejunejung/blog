@@ -82,6 +82,9 @@ jobs:
 
                   core.setOutput('comments', comments);
 
+            - name: Install @octokit/rest
+              run: yarn add @octokit/rest
+
             - name: Comment PR
               id: Comment-PR
               uses: actions/github-script@v7
