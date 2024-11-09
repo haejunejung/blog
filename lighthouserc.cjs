@@ -5,7 +5,7 @@ module.exports = {
       startServerCommand: "yarn run preview", // The command to run to start the server
       startServerReadyPattern: "Local", // String pattern to listen for the server
       numberOfRuns: 1, // The number of times to run Lighthouse
-      url: ["http://127.0.0.1:4173/blog"], // A URL to run Lighthouse on.
+      url: ["http://localhost:4173"], // A URL to run Lighthouse on.
       // isSinglePageApplication: true,
       settings: {
         preset: "desktop",

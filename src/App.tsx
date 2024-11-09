@@ -13,7 +13,7 @@ const App = () => {
       <Layout>
         <Header />
         <Switch>
-          <Route path="/blog" component={MainPage} />
+          <Route path="/" component={MainPage} />
           <Route path="/tech-blog" component={TechBlogPage} />
           <Route path="/webapi/:id" component={MDXDetailPage} />
           <Route path="/performance/:id" component={MDXDetailPage} />
