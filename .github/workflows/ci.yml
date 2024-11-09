@@ -87,4 +87,5 @@ jobs:
               env:
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
+                comment-id: 1
                 body: ${{ steps.format_lighthouse_score.outputs.comments }}
