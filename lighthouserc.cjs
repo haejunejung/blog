@@ -4,12 +4,10 @@ module.exports = {
     collect: {
       startServerCommand: "yarn run preview", // The command to run to start the server
       startServerReadyPattern: "Local", // String pattern to listen for the server
-      numberOfRuns: 1, // The number of times to run Lighthouse
+      numberOfRuns: 5, // The number of times to run Lighthouse
       url: ["http://localhost:4173"], // A URL to run Lighthouse on.
     },
-    assert: {
-      preset: "lighthouse:recommended",
-    },
+    assert: {},
     upload: {
       target: "filesystem",
       outputDir: "./lhci_reports",

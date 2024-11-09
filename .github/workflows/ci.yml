@@ -33,7 +33,7 @@ jobs:
 
             - name: Format lighthouse score
               id: format_lighthouse_score
-              uses: actions/github-script@v3
+              uses: actions/github-script@v7
               with:
                 github-token: ${{secrets.GITHUB_TOKEN}}
                 script: |
@@ -50,9 +50,6 @@ jobs:
                     
                     const { audits } = details;
 
-                    console.log("summary", summary);
-                    console.log("details", details);
-
                     const formatResult = (res) => Math.round(res * 100);
 
                     Object.keys(summary).forEach((key) => (summary[key] = formatResult(summary[key])));
@@ -64,15 +61,30 @@ jobs:
                       `| Category | Score |`,
                       `| --- | --- |`,
                       `| ${score(summary.performance)} Performance | ${summary.performance} |`,
+                      `| ${score(summary.accessibility)} Accessbility | ${summary.accessibility} |`,
+                      `| ${score(summary['best-practices'])} Best Practices | ${summary['best-practices']} |`,
+                      `| ${score(summary.seo)} SEO | ${summary.seo} |`,
                     ].join("\n");
 
                     const detail = [
                       `| Category | Score |`,
                       `| --- | --- |`,
                       `| ${score(audits["first-contentful-paint"].score * 100)} First Contentful Paint | audits["first-contentful-paint"].displayValue} |`,
+                      `| ${score(audits["largest-contentful-paint"].score * 100)} Largest Contentful Paint | audits["largest-contentful-paint"].displayValue} |`,
+                      `| ${score(audits["total-blocking-time"].score * 100)} Total Blocking Time | audits["total-blocking-time"].displayValue} |`,
+                      `| ${score(audits["speed-index"].score * 100)} Speed Index | audits["speed-index"].displayValue} |`,
+                      `| ${score(audits["cumulative-layout-shift"].score * 100)} Cumulative Layout Shift | audits["cumulative-layout-shift"].displayValue} |`,
+                      `| ${score(audits["interactive"].score * 100)} Time to Interactive | audits["interactive"].displayValue} |`,
                     ].join("\n");
 
                     let comments = comment + "\n" + detail + "\n";
                   });
 
                   core.setOutput('comments', comments);
+
+            - name: comment PR
+              uses: unsplash/comment-on-pr@v1.3.0
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                msg: ${{ steps.format_lighthouse_score.outputs.comments }}
