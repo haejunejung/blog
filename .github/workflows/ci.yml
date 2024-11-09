@@ -26,3 +26,53 @@ jobs:
               run: |
                 npm install -g @lhci/cli
                 lhci autorun || echo "Failed to Run Lighthouse CI"
+
+            - name: Verify lhci_reports path
+              run: |
+                ls -la ./lhci_reports
+
+            - name: Format lighthouse score
+              id: format_lighthouse_score
+              uses: actions/github-script@v3
+              with:
+                github-token: ${{secrets.GITHUB_TOKEN}}
+                script: |
+                  const path = require('path');
+                  const fs = require('fs');
+                  const results = JSON.parse(fs.readFileSync(path.resolve("./lhci_reports/manifest.json")));
+                  
+                  let comments = "";
+
+                  results.forEach((result) => {
+                    const { summary, jsonPath } = result;
+                    
+                    const details = JSON.parse(fs.readFileSync(jsonPath));
+                    
+                    const { audits } = details;
+
+                    console.log("summary", summary);
+                    console.log("details", details);
+
+                    const formatResult = (res) => Math.round(res * 100);
+
+                    Object.keys(summary).forEach((key) => (summary[key] = formatResult(summary[key])));
+
+                    const score = (res) => (res >= 90 ? "🟢" : res >= 50 ? "🟠" : "🔴");
+
+                    const comment = [
+                      `⚡️ Lighthouse report!`,
+                      `| Category | Score |`,
+                      `| --- | --- |`,
+                      `| ${score(summary.performance)} Performance | ${summary.performance} |`,
+                    ].join("\n");
+
+                    const detail = [
+                      `| Category | Score |`,
+                      `| --- | --- |`,
+                      `| ${score(audits["first-contentful-paint"].score * 100)} First Contentful Paint | audits["first-contentful-paint"].displayValue} |`,
+                    ].join("\n");
+
+                    let comments = comment + "\n" + detail + "\n";
+                  });
+
+                  core.setOutput('comments', comments);

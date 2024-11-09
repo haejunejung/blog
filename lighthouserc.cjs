@@ -6,16 +6,14 @@ module.exports = {
       startServerReadyPattern: "Local", // String pattern to listen for the server
       numberOfRuns: 1, // The number of times to run Lighthouse
       url: ["http://localhost:4173"], // A URL to run Lighthouse on.
-      // isSinglePageApplication: true,
-      settings: {
-        preset: "desktop",
-      },
     },
     assert: {
       preset: "lighthouse:recommended",
     },
     upload: {
-      target: "temporary-public-storage", // The type of target to upload the data to. If set to anything other than "lhci", some of the options will not apply.
+      target: "filesystem",
+      outputDir: "./lhci_reports",
+      reportFilenamePattern: "%%PATHNAME%%-%%DATETIME%%-report.%%EXTENSION%%",
     },
     server: {},
     wizard: {},
