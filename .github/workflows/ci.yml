@@ -91,34 +91,31 @@ jobs:
               with:
                 github-token: ${{secrets.GITHUB_TOKEN}}
                 script: |
-                  const fs = require('fs');
-                  const { Octokit } = require('@octokit/rest');
-                  const octokit = new Octokit({ auth: `${{ secrets.GITHUB_TOKEN }}` });
-                  
-                  const { repo, payload } = context;
-
-                  const { data: previouseComments } = await octokit.issues.listComments({
-                    owner: repo.owner,
-                    repo: repo.repo,
-                    issue_number: payload.pull_request.number
-                  });
-
-                  const previouseLhciComment = previouseComments.find((comment) => (comment.body.startsWith('⚡️ Lighthouse report!')));
-                  const newComment = `${{ steps.format_lighthouse_score.outputs.comments }}`;
-
-                  if (previouseLhciComment) {
-                    await octokit.issues.updateComment({
-                      owner: repo.owner,
-                      repo: repo.repo,
-                      comment_id: previouseLhciComment.id,
-                      body: newComment
+                  try {
+                    const { data: previouseComments } = await github.rest.issues.listComments({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      issue_number: context.payload.pull_request.number
                     });
-                  } else {
-                    await octokit.issues.createComment({
-                      owner: repo.owner,
-                      repo: repo.repo,
-                      issue_number: payload.pull_request.number,
-                      body: newComment
-                    });
+
+                    const previouseLhciComment = previouseComments.find((comment) => (comment.body.startsWith('⚡️ Lighthouse report!')));
+                    const newComment = `${{ steps.format_lighthouse_score.outputs.comments }}`;
+
+                    if (previouseLhciComment) {
+                      await github.rest.issues.updateComment({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        comment_id: previouseLhciComment.id,
+                        body: newComment
+                      });
+                    } else {
+                      await github.rest.issues.createComment({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: context.payload.pull_request.number,
+                        body: newComment
+                      });
+                    }
+                  } catch (error) {
+                    throw new Error(`Check this error >>> ${error.message}`); 
                   }
-
