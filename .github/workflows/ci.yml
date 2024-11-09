@@ -69,23 +69,53 @@ jobs:
                     const detail = [
                       `| Category | Score |`,
                       `| --- | --- |`,
-                      `| ${score(audits["first-contentful-paint"].score * 100)} First Contentful Paint | audits["first-contentful-paint"].displayValue} |`,
-                      `| ${score(audits["largest-contentful-paint"].score * 100)} Largest Contentful Paint | audits["largest-contentful-paint"].displayValue} |`,
-                      `| ${score(audits["total-blocking-time"].score * 100)} Total Blocking Time | audits["total-blocking-time"].displayValue} |`,
-                      `| ${score(audits["speed-index"].score * 100)} Speed Index | audits["speed-index"].displayValue} |`,
-                      `| ${score(audits["cumulative-layout-shift"].score * 100)} Cumulative Layout Shift | audits["cumulative-layout-shift"].displayValue} |`,
-                      `| ${score(audits["interactive"].score * 100)} Time to Interactive | audits["interactive"].displayValue} |`,
+                      `| ${score(audits["first-contentful-paint"].score * 100)} First Contentful Paint | audits["first-contentful-paint"].displayValue |`,
+                      `| ${score(audits["largest-contentful-paint"].score * 100)} Largest Contentful Paint | audits["largest-contentful-paint"].displayValue |`,
+                      `| ${score(audits["total-blocking-time"].score * 100)} Total Blocking Time | audits["total-blocking-time"].displayValue |`,
+                      `| ${score(audits["speed-index"].score * 100)} Speed Index | audits["speed-index"].displayValue |`,
+                      `| ${score(audits["cumulative-layout-shift"].score * 100)} Cumulative Layout Shift | audits["cumulative-layout-shift"].displayValue |`,
+                      `| ${score(audits["interactive"].score * 100)} Time to Interactive | audits["interactive"].displayValue |`,
                     ].join("\n");
 
-                    let comments = comment + "\n" + detail + "\n";
+                    comments += comment + "\n" + detail + "\n";
                   });
 
                   core.setOutput('comments', comments);
 
-            - name: Create comment
-              uses: peter-evans/create-or-update-comment@v4
-              env:
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            - name: Comment PR
+              id: Comment-PR
+              uses: actions/github-script@v7
               with:
-                comment-id: 1
-                body: ${{ steps.format_lighthouse_score.outputs.comments }}
+                github-token: ${{secrets.GITHUB_TOKEN}}
+                script: |
+                  const fs = require('fs');
+                  const { Octokit } = require('@octokit/rest');
+                  const octokit = new Octokit({ auth: `${{ secrets.GITHUB_TOKEN }}` });
+                  
+                  const { repo, payload } = context;
+
+                  const { data: previouseComments } = await octokit.issues.listComments({
+                    owner: repo.owner,
+                    repo: repo.repo,
+                    issue_number: payload.pull_request.number
+                  });
+
+                  const previouseLhciComment = previouseComments.find((comment) => (comment.body.startsWith('⚡️ Lighthouse report!')));
+                  const newComment = `${{ steps.format_lighthouse_score.outputs.comments }}`;
+
+                  if (previouseLhciComment) {
+                    await octokit.issues.updateComment({
+                      owner: repo.owner,
+                      repo: repo.repo,
+                      comment_id: previouseLhciComment.id,
+                      body: newComment
+                    });
+                  } else {
+                    await octokit.issues.createComment({
+                      owner: repo.owner,
+                      repo: repo.repo,
+                      issue_number: payload.pull_request.number,
+                      body: newComment
+                    });
+                  }
+
