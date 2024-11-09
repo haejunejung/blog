@@ -82,9 +82,9 @@ jobs:
 
                   core.setOutput('comments', comments);
 
-            - name: comment PR
-              uses: unsplash/comment-on-pr@v1.3.0
+            - name: Create comment
+              uses: peter-evans/create-or-update-comment@v4
               env:
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
-                msg: ${{ steps.format_lighthouse_score.outputs.comments }}
+                body: ${{ steps.format_lighthouse_score.outputs.comments }}
