@@ -5,6 +5,7 @@ import LightHouseBestPractice from "./assets/light-house-best-practice.png"
 import LightHouseSEO from "./assets/light-house-seo.png"
 import LightHouseInformation from "./assets/light-house-information.png"
 import LightHouseCIProgress from "./assets/light-house-ci-progress.png"
+import LightHouseResult from "./assets/light-house-result.png"
 import MultiReference from "@/components/[mdx]/MultiReference"
 
 <img src={LightHouse} alt="Light House" style={{ width: "100%"}} />
@@ -111,11 +112,194 @@ Lighthouse의 지표를 잘 활용한다면, 웹 성능을 주기적으로 확�
 Lighthouse CI는 모든 커밋과 변화에 대해서 자동으로 Lighthouse를 측정하고 기록해주는 도구입니다.
 
 ### Lighthouse CI와 Github Actions로 자동화하기
-Lighthouse CI에서는 그림과 같은 프로세스를 권장하고 있습니다. 저는 Github Actions를 활용했습니다.
+Lighthouse CI에서는 그림과 같은 프로세스를 권장하고 있습니다. 
 
-<img src={LightHouseCIProgress} alt="Light house CI Progress" style={{ width: "100%" }} />
+<img src={LightHouseCIProgress} alt="Light House CI Progress" style={{ width: "100%" }} />
 
+Lighthouse CI는 아래와 같은 기능들을 제공하고 있습니다.
+- 모든 PR에 대한 Lighthouse 정보 제공
+- 오픈라인 제공, 접근성, 성능, 권장 사항, SEO가 기준 수치를 만족하는지 여부 확인
+- 시간에 따른 성능 지표 변화
+- 여러 번 실행 가능
+- 두 버전 사이의 변화
 
+#### Lighthouse CI 설정 파일 구성하기
 
+자동화하기 위해서는 우선 **Lighthouse CI에 대한 설정**을 진행해야 합니다. 
+저는 현재 의존성 관리는 yarn, 빌드 도구로는 vite를 사용하고 있어 아래와 같이 구성했습니다.
 
+```javascript
+// lighthouserc.cjs
+// https://github.com/GoogleChrome/lighthouse-ci/blob/main/docs/configuration.md
+module.exports = {
+  ci: {
+    collect: {
+      startServerCommand: "yarn run preview", // The command to run to start the server
+      startServerReadyPattern: "Local", // String pattern to listen for the server
+      numberOfRuns: 1, // The number of times to run Lighthouse
+      url: ["http://localhost:4173"], // A URL to run Lighthouse on.
+    },
+    assert: {
+      // assertions: {
+      //   "categories:performance": ["warn", { minScore: 0.9 }],
+      //   "categories:accessibility": ["error", { minScore: 1 }],
+      //   // ...
+      // },
+    },
+    upload: {
+      target: "filesystem",
+      outputDir: "./lhci_reports",
+      reportFilenamePattern: "%%PATHNAME%%-%%DATETIME%%-report.%%EXTENSION%%",
+    },
+    server: {},
+    wizard: {},
+  },
+};
 
+```
+
+Lighthouse가 PR이 올라올 때마다 성능을 측정하고, 댓글로 남겨지게끔 하기 위해서 reports를 기록할 필요가 있었고,
+그래서 upload에서 ./lhci_reports에 저장하도록 했습니다 (이후 workflow에서 사용됩니다).
+gh-pages나 서버에 json형식으로 저장하는 방법도 있지만 지금은 불필요하다고 생각이 들어서 
+나중에 시간이 되면 데이터를 받아서 시각화하는 프로젝트도 진행해볼까 싶습니다.
+
+#### Github Actions 설정 파일 구성하기
+다음으로는 **github actions** 설정 파일을 구성해야 합니다. 
+크게 4가지 단계로 나누어져 있습니다.
+1. 의존성 설치
+2. Lighthouse CI 실행 및 기록
+3. lhci_reports에 기록된 내용을 바탕으로 점수 포맷 변경
+4. Pull Request 댓글에 지표 최신 기록 작성
+
+```yaml
+name: CI
+on: 
+    push:
+      branches: ['main']
+    pull_request:
+      branches: ['main']
+jobs:
+    lhci:
+        name: Lighthuse
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - name: Set up Node
+              uses: actions/setup-node@v4
+              with:
+                node-version: 20
+
+            - name: Enable Corepack
+              run: corepack enable
+            - name: Install Dependencies
+              run: yarn install --frozen-lockfile
+            - name: Build
+              run: yarn build
+            - name: Run Lighthouse CI
+              run: |
+                npm install -g @lhci/cli
+                lhci autorun || echo "Failed to Run Lighthouse CI"
+
+            - name: Verify lhci_reports path
+              run: |
+                ls -la ./lhci_reports
+
+            - name: Format lighthouse score
+              id: format_lighthouse_score
+              uses: actions/github-script@v7
+              with:
+                github-token: ${{secrets.GITHUB_TOKEN}}
+                script: |
+                  const path = require('path');
+                  const fs = require('fs');
+                  const results = JSON.parse(fs.readFileSync(path.resolve("./lhci_reports/manifest.json")));
+                  
+                  let comments = "";
+
+                  results.forEach((result) => {
+                    const { summary, jsonPath } = result;
+                    const details = JSON.parse(fs.readFileSync(jsonPath));
+                    const { audits } = details;
+                    const formatResult = (res) => Math.round(res * 100);
+                    Object.keys(summary).forEach((key) => (summary[key] = formatResult(summary[key])));
+                    const score = (res) => (res >= 90 ? "🟢" : res >= 50 ? "🟠" : "🔴");
+
+                    const comment = [
+                      `⚡️ Lighthouse report!`,
+                      `| Category | Score |`,
+                      `| --- | --- |`,
+                      `| ${score(summary.performance)} Performance | ${summary.performance} |`,
+                      `| ${score(summary.accessibility)} Accessbility | ${summary.accessibility} |`,
+                      `| ${score(summary['best-practices'])} Best Practices | ${summary['best-practices']} |`,
+                      `| ${score(summary.seo)} SEO | ${summary.seo} |`,
+                    ].join("\n");
+
+                    const detail = [
+                      `| ${score(audits["first-contentful-paint"].score * 100)} First Contentful Paint | ${audits["first-contentful-paint"].displayValue} |`,
+                      `| ${score(audits["largest-contentful-paint"].score * 100)} Largest Contentful Paint | ${audits["largest-contentful-paint"].displayValue} |`,
+                      `| ${score(audits["total-blocking-time"].score * 100)} Total Blocking Time | ${audits["total-blocking-time"].displayValue} |`,
+                      `| ${score(audits["speed-index"].score * 100)} Speed Index | ${audits["speed-index"].displayValue} |`,
+                      `| ${score(audits["cumulative-layout-shift"].score * 100)} Cumulative Layout Shift | ${audits["cumulative-layout-shift"].displayValue} |`,
+                      `| ${score(audits["interactive"].score * 100)} Time to Interactive | ${audits["interactive"].displayValue} |`,
+                    ].join("\n");
+
+                    comments += comment + "\n" + detail + "\n";
+                  });
+
+                  core.setOutput('comments', comments);
+
+            - name: Comment PR
+              id: Comment-PR
+              uses: actions/github-script@v7
+              with:
+                github-token: ${{secrets.GITHUB_TOKEN}}
+                script: |
+                  try {
+                    const { data: previouseComments } = await github.rest.issues.listComments({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      issue_number: context.payload.pull_request.number
+                    });
+
+                    const previouseLhciComment = previouseComments.find((comment) => (comment.body.startsWith('⚡️ Lighthouse report!')));
+                    const newComment = `${{ steps.format_lighthouse_score.outputs.comments }}`;
+
+                    if (previouseLhciComment) {
+                      await github.rest.issues.updateComment({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        comment_id: previouseLhciComment.id,
+                        body: newComment
+                      });
+                    } else {
+                      await github.rest.issues.createComment({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: context.payload.pull_request.number,
+                        body: newComment
+                      });
+                    }
+                  } catch (error) {
+                    throw new Error(`Check this error >>> ${error.message}`); 
+                  }
+
+```
+
+직접 적용해보면 이런 결과가 나오게 됩니다.
+<img src={LightHouseResult} alt="Light House Result" style={{ width: "100%" }} />
+
+여기서는 특정 지표들만 보이게 했는데, 내부에 많은 데이터들이 있으니 자신에게 필요한 데이터를 가공하면 될 것 같습니다.
+
+## 마무리
+웹 성능과 Lighthouse를 공부하며 가장 와닿았던 말은 **"웹 성능의 목표는 사용자들이 성능 문제를 느끼지 않도록 하는 것"**
+이었습니다. 단순히 웹 성능을 올리기 위해 개발을 진행하는 것이 아니라, 사용자가 느끼는 불편함을 해소하기 위해
+웹 성능 개선이 필수적이라는 것도 느낄 수 있었습니다. 자동화를 해놓았으니 앞으로는 성능도 지속적으로 모니터링 
+하면서 개발을 진행할 수 있을 것 같습니다. 이렇게 한 번 자동화해놓은 걸 바탕으로 앞으로 프로젝트에서도 유용하게 써먹을 수 있을 것 같아서
+좋습니다.
+
+<MultiReference references={[
+    "https://fe-developers.kakaoent.com/2022/220602-lighthouse-with-github-actions/",
+    "https://velog.io/@greencloud/%EC%8C%88%EB%BD%95%ED%95%98%EA%B2%8C-Lighthouse-%EC%9E%90%EB%8F%99%ED%99%94%ED%95%98%EA%B8%B0-ijcqk0uv#-lighthouseyml",
+    "https://github.com/GoogleChrome/lighthouse-ci"
+]} />

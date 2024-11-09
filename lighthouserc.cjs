@@ -7,7 +7,13 @@ module.exports = {
       numberOfRuns: 1, // The number of times to run Lighthouse
       url: ["http://localhost:4173"], // A URL to run Lighthouse on.
     },
-    assert: {},
+    assert: {
+      // assertions: {
+      //   "categories:performance": ["warn", { minScore: 0.9 }],
+      //   "categories:accessibility": ["error", { minScore: 1 }],
+      //   // ...
+      // },
+    },
     upload: {
       target: "filesystem",
       outputDir: "./lhci_reports",
