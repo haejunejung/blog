@@ -3,10 +3,10 @@ import {
 	totalMdxPageList,
 	totalTechMdxPageList,
 } from "@/__articles__";
-import { ArticleListView, Banner, Tabs, VStack } from "@/components";
+import { ArticleListView, Banner, Tabs, VStack } from "@/components-regacy";
 import { useLocation, useNavigate } from "react-router";
 
-export function CategoryPage() {
+export function HomePage() {
 	const location = useLocation();
 	const navigate = useNavigate();
 	const pathname = location.pathname;

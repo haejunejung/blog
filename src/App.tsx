@@ -1,6 +1,6 @@
-import { Layout, MDXComponents } from "@/components";
+import { Layout, MDXComponents } from "@/components-regacy";
 import { useNetworkStatus } from "@/hooks";
-import { ArticlePage, CategoryPage, NotFoundPage, OfflinePage } from "@/pages";
+import { ArticlePage, HomePage, NotFoundPage, OfflinePage } from "@/pages";
 import { MDXProvider } from "@mdx-js/react";
 import { Navigate, Route, Routes } from "react-router";
 
@@ -21,8 +21,8 @@ export function App() {
 			<Routes>
 				{/* 블로그 포스트 */}
 				<Route path="/" element={<Layout />}>
-					<Route index={true} element={<CategoryPage />} />
-					<Route path=":category" element={<CategoryPage />} />
+					<Route index={true} element={<HomePage />} />
+					<Route path=":category" element={<HomePage />} />
 					<Route path=":category/:articleId" element={<ArticlePage />} />
 				</Route>
 

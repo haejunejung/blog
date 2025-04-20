@@ -1,4 +1,4 @@
-import { Text } from "@/components";
+import { Text } from "@/components-regacy";
 import { css } from "@emotion/css";
 
 export function OfflinePage() {

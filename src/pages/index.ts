@@ -1,4 +1,4 @@
 export { ArticlePage } from "./ArticlePage";
-export { CategoryPage } from "./CategoryPage";
+export { HomePage } from "./HomePage";
 export { NotFoundPage } from "./NotFoundPage";
 export { OfflinePage } from "./OfflinePage";

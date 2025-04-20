@@ -1,5 +1,5 @@
 import { totalMdxPageList } from "@/__articles__";
-import { Banner, Fallback } from "@/components";
+import { Banner, Fallback } from "@/components-regacy";
 import { css } from "@emotion/css";
 import { Suspense, lazy } from "react";
 import { useLocation } from "react-router";
