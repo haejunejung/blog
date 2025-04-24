@@ -1,12 +1,23 @@
+import { emptyObject } from "@/consts";
+import { noop } from "@/utils";
 import { useSyncExternalStore } from "react";
+import { usePreservedCallback } from "./usePreservedCallback";
 
-/**
- * @description 네트워크 연결 상태를 확인할 수 있는 훅입니다.
- * @return {boolean} 네트워크가 연결되어 있다면 `true`, 연결되어 있지 않다면 `false`를 반환합니다. SSR 환경에서는 `true`를 반환합니다.
- */
-export function useNetworkStatus(): boolean {
+type UseNetworkStatusProps = {
+	onlineCallback?: (event: Event) => void;
+	offlineCallback?: (event: Event) => void;
+};
+
+export function useNetworkStatus({
+	onlineCallback = noop,
+	offlineCallback = noop,
+}: UseNetworkStatusProps = emptyObject): boolean {
+	const preservedSubscribe = usePreservedCallback((callback: VoidFunction) =>
+		subscribe(callback, onlineCallback, offlineCallback),
+	);
+
 	const isOnline = useSyncExternalStore(
-		subscribe,
+		preservedSubscribe,
 		() => getSnapshot(),
 		() => getServerSnapshot(),
 	);
@@ -14,13 +25,27 @@ export function useNetworkStatus(): boolean {
 	return isOnline;
 }
 
-const subscribe = (callback: () => void) => {
-	window.addEventListener("online", callback);
-	window.addEventListener("offline", callback);
+const subscribe = (
+	callback: VoidFunction,
+	onlineCallback: (event: Event) => void,
+	offlineCallback: (event: Event) => void,
+) => {
+	const handleOnlineCallback = (event: Event) => {
+		onlineCallback(event);
+		return callback();
+	};
+
+	const handleOfflineCallback = (event: Event) => {
+		offlineCallback(event);
+		return callback();
+	};
+
+	window.addEventListener("online", handleOnlineCallback);
+	window.addEventListener("offline", handleOfflineCallback);
 
 	return () => {
-		window.removeEventListener("online", callback);
-		window.removeEventListener("offline", callback);
+		window.removeEventListener("online", handleOnlineCallback);
+		window.removeEventListener("offline", handleOfflineCallback);
 	};
 };
 
