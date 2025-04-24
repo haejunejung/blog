@@ -38,6 +38,13 @@ export type HasDisplayName = { displayName?: string };
 
 /**
  * @description
+ * When we create a component, we need to set the className for styling purposes.
+ * The className prop is optional and can be used to apply custom styles to the component.
+ */
+export type HasClassName = { className?: string };
+
+/**
+ * @description
  * When we create a polymorphic support component, we need to set the type of the component.
  * It contains `as`, `children` and the props of the component.
  *
@@ -48,10 +55,8 @@ export type HasDisplayName = { displayName?: string };
 export type PolymorphicComponentProps<
 	TTag extends ElementType,
 	TProps extends object = EmptyObject,
-> = TProps & { as?: TTag } & Omit<
-		ComponentPropsWithoutRef<TTag>,
-		keyof TProps | "as"
-	>;
+> = TProps & { as?: TTag } & HasClassName &
+	Omit<ComponentPropsWithoutRef<TTag>, keyof TProps | "as" | "className">;
 
 /**
  * @description
