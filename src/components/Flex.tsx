@@ -7,18 +7,18 @@ import { forwardRefWithAs } from "@/utils";
 import clsx from "clsx";
 import type { ElementType } from "react";
 
-type StackProps<TTag extends ElementType> = PolymorphicComponentProps<
+type FlexProps<TTag extends ElementType> = PolymorphicComponentProps<
 	TTag,
 	{
 		direction?: "horizontal" | "vertical";
 	}
 >;
 
-type StackRef<TTag extends ElementType> = PolymorphicRef<TTag>;
+type FlexRef<TTag extends ElementType> = PolymorphicRef<TTag>;
 
-function StackFn<TTag extends ElementType = "div">(
-	props: StackProps<TTag>,
-	ref: StackRef<TTag>,
+function FlexFn<TTag extends ElementType = "div">(
+	props: FlexProps<TTag>,
+	ref: FlexRef<TTag>,
 ) {
 	const {
 		as,
@@ -46,12 +46,12 @@ function StackFn<TTag extends ElementType = "div">(
 	);
 }
 
-StackFn.displayName = "Stack";
+FlexFn.displayName = "Flex";
 
-export interface _internal_ComponentStack extends HasDisplayName {
+export interface _internal_ComponentFlex extends HasDisplayName {
 	<TTag extends ElementType = "div">(
-		props: StackProps<TTag> & { ref?: StackRef<TTag> },
-	): ReturnType<typeof StackFn>;
+		props: FlexProps<TTag> & { ref?: FlexRef<TTag> },
+	): ReturnType<typeof FlexFn>;
 }
 
-export const Stack = forwardRefWithAs(StackFn) as _internal_ComponentStack;
+export const Flex = forwardRefWithAs(FlexFn) as _internal_ComponentFlex;

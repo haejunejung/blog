@@ -11,7 +11,7 @@ import {
 	type PropsWithChildren,
 	useRef,
 } from "react";
-import { Stack } from "./Stack";
+import { Flex } from "./Flex";
 
 type UseTabsValueContextType = {
 	activeTab: string;
@@ -90,9 +90,9 @@ const TabsHeader = ({ children }: TabsHeaderProps) => {
 	const { direction } = useTabsValue();
 
 	return (
-		<Stack as="nav" role="tablist" direction={direction}>
+		<Flex as="nav" role="tablist" direction={direction}>
 			{children}
-		</Stack>
+		</Flex>
 	);
 };
 
