@@ -1,5 +1,2 @@
-/******************** Object ********************/
-export const emptyObject = {};
-
-/******************** Array ********************/
-export const emptyArray = [] as unknown[];
+export { emptyArray } from "./emptyArray";
+export { emptyObject } from "./emptyObject";
