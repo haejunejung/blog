@@ -28,6 +28,12 @@ export type EmptyObject = Record<string, never>;
  */
 export type StrictOmit<T, K extends keyof T> = Omit<T, K>;
 
+/**
+ * @description
+ * A type that represents a callable type.
+ */
+export type ResolveCallable<T> = T | (() => T);
+
 /******************** Polymorphic ********************/
 
 /**
