@@ -4,7 +4,6 @@ import { type DependencyList, useEffect } from "react";
 export const useAsyncEffect = (
 	effect: (signal: AbortSignal) => Promise<ResolveCallable<void>>,
 	deps?: DependencyList,
-	// biome-ignore lint/suspicious/noExplicitAny: support any reason type
 	reason?: any,
 ) => {
 	// biome-ignore lint/correctness/useExhaustiveDependencies: deps

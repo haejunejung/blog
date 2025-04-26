@@ -26,6 +26,9 @@
 						"filenameCases": ["PascalCase", "camelCase"]
 					}
 				}
+			},
+			"suspicious": {
+				"noExplicitAny": "off"
 			}
 		}
 	}

@@ -34,7 +34,6 @@ export function serverEnvironment<T>(callback: () => T) {
 		return callback();
 	} finally {
 		for (const [key, value] of origins.entries()) {
-			// biome-ignore lint/suspicious/noExplicitAny: globalThis
 			(globalThis as any)[key] = value;
 		}
 	}

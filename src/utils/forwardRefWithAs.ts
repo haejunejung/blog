@@ -9,7 +9,6 @@ import { forwardRef } from "react";
 export function forwardRefWithAs<
 	T extends { name: string; displayName?: string },
 >(component: T): T & HasDisplayName {
-	// biome-ignore lint/suspicious/noExplicitAny: This is hack, so we need to use any
 	return Object.assign(forwardRef(component as any) as any, {
 		displayName: component.displayName ?? component.name,
 	});
