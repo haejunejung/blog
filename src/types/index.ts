@@ -2,6 +2,7 @@ import type {
 	ComponentPropsWithRef,
 	ComponentPropsWithoutRef,
 	ElementType,
+	PropsWithChildren,
 } from "react";
 
 export type { ArticlePageProps } from "./ArticlePageProps";
@@ -60,9 +61,12 @@ export type HasClassName = { className?: string };
  */
 export type PolymorphicComponentProps<
 	TTag extends ElementType,
-	TProps extends object = EmptyObject,
-> = TProps & { as?: TTag } & HasClassName &
-	Omit<ComponentPropsWithoutRef<TTag>, keyof TProps | "as" | "className">;
+	// biome-ignore lint/complexity/noBannedTypes: allow
+	TProps extends Record<string, unknown> = {},
+> = PropsWithChildren<
+	TProps & { as?: TTag } & HasClassName &
+		Omit<ComponentPropsWithoutRef<TTag>, keyof TProps | "as" | "className">
+>;
 
 /**
  * @description
