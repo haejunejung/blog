@@ -3,6 +3,14 @@ import type { ArticlePageProps } from "@/types";
 export const techList: ArticlePageProps[] = [
 	{
 		src: "/images/eslint.png",
+		title: "AbortController로 웹 요청 중단하기",
+		description: "",
+		slug: "/tech/abort-controller",
+		date: "2025년 4월 26일",
+		importMdx: () => import("./abort-controller.mdx"),
+	},
+	{
+		src: "/images/eslint.png",
 		title: "ESLint의 Flat Config로 가는 길: 소개",
 		description: "ESLint의 새로운 설정 방식 Flat Config에 대해서 소개합니다",
 		slug: "/tech/eslint-flat-config-introudction",

@@ -1,0 +1,39 @@
+# AbortController (~ing)
+
+이번 글에서는 AbortController에 대해 알아보겠습니다.
+
+## 0. 개요
+현업에서 백오피스 개발을 진행하면서 CSV 다운로드 기능을 구현하는 일이 생겼습니다.
+CSV 다운로드를 위한 API 요청을 보내고, 응답으로 받은 CSV 데이터를 Blob으로 변환하여 다운로드 링크를 생성하는 작업을 진행했죠.
+처음에는 데이터의 양이 적어 문제없이 잘 동작했지만, 데이터의 양이 많아지면서 다운로드를 중도에 취소하고 싶다는 요구사항이 생겼습니다.
+웹 요청을 순차적으로 보내고 응답을 기다리는 방식으로 구현했기 때문에, 다운로드를 취소하기 위해서는 요청을 중단할 수 있는 방법이 필요했습니다.
+이러한 문제를 해결하기 위해 AbortController를 사용하게 되었고, 이번 기회에 AbortController에 대해 정리해보려고 합니다.
+
+## 1. AbortController란?
+AbortController는 하나 이상의 웹 요청을 중도에 중단할 수 있는 기능을 제공하는 API입니다.
+
+AbortController는 간단한 인터페이스를 가지고 있습니다.
+- abort(): AbortController의 abort 메서드를 호출하면, AbortController에 연결된 모든 요청이 중단됩니다.
+- signal: AbortController의 signal 속성은 AbortSignal 객체를 반환합니다. 이 객체는 요청을 중단할 수 있는 신호를 전달하는 역할을 합니다.
+
+```typescript
+/** A controller object that allows you to abort one or more DOM requests as and when desired. */
+interface AbortController {
+    /**
+     * Returns the AbortSignal object associated with this object.
+     */
+
+    readonly signal: AbortSignal;
+    /**
+     * Invoking this method will set this object's AbortSignal's aborted flag and signal to any observers that the associated activity is to be aborted.
+     */
+    abort(reason?: any): void;
+}
+```
+
+## References
+
+- [MDN](https://developer.mozilla.org/en-US/docs/Web/API/AbortController)
+- [whatwg](https://dom.spec.whatwg.org/#interface-AbortSignal)
+- [Outsider's Dev Story](https://blog.outsider.ne.kr/1602?category=20)
+- [logrocket](https://blog.logrocket.com/complete-guide-abortcontroller/)
