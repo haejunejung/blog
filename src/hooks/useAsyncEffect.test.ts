@@ -36,4 +36,25 @@ describe("useAsyncEffect", () => {
 		expect(effect).toHaveBeenCalled();
 		expect(cleanup).toHaveBeenCalled();
 	});
+
+	it("should abort the effect when unmounted with a reason", async () => {
+		const cleanup = vi.fn();
+		const effect = vi.fn(async (signal: AbortSignal) => {
+			signal.onabort = () => {
+				cleanup();
+			};
+		});
+
+		const { unmount } = renderHookSSR(() =>
+			useAsyncEffect(effect, [], "unmounted"),
+		);
+		const signal = effect.mock.calls[0][0];
+		expect(signal.aborted).toBe(false);
+		await waitFor(async () => await Promise.resolve(0));
+		unmount();
+		expect(signal.aborted).toBe(true);
+		expect(signal.reason).toBe("unmounted");
+		expect(effect).toHaveBeenCalled();
+		expect(cleanup).toHaveBeenCalled();
+	});
 });
