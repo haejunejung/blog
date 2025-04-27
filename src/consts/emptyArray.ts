@@ -1,1 +1,1 @@
-export const emptyArray: any[] = [];
+export const emptyArray: never[] = [];
