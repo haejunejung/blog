@@ -16,7 +16,8 @@
 				"useExplicitType": "off",
 				"noImgElement": "off",
 				"noSecrets": "off",
-				"useSortedClasses": "off"
+				"useSortedClasses": "off",
+				"useComponentExportOnlyModules": "off"
 			},
 			"style": {
 				"useNamingConvention": "off",
@@ -25,7 +26,8 @@
 					"options": {
 						"filenameCases": ["PascalCase", "camelCase"]
 					}
-				}
+				},
+				"noDefaultExport": "off"
 			},
 			"suspicious": {
 				"noExplicitAny": "off"
