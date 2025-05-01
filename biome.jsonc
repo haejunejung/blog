@@ -21,12 +21,7 @@
 			},
 			"style": {
 				"useNamingConvention": "off",
-				"useFilenamingConvention": {
-					"level": "error",
-					"options": {
-						"filenameCases": ["PascalCase", "camelCase"]
-					}
-				},
+				"useFilenamingConvention": "off",
 				"noDefaultExport": "off"
 			},
 			"suspicious": {
